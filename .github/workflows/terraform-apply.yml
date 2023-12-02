@@ -1,9 +1,8 @@
 name: "Terraform Apply"
 
 on:
-  push:
-    branches:
-      - main
+  issue_comment:
+    types: [created, edited, deleted]
 
 env:
   TF_CLOUD_ORGANIZATION: "DCPIM"
@@ -13,6 +12,7 @@ env:
 
 jobs:
   terraform:
+    if: ${{ github.event.issue.pull_request }} and contains(github.event.comment.body, 'terraform apply')
     name: "Terraform Apply"
     runs-on: ubuntu-latest
     permissions:
