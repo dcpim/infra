@@ -1,8 +1,9 @@
 name: "Terraform Apply"
 
 on:
-  issue_comment:
-    types: [created, edited, deleted]
+  push:
+    branches:
+      - main
 
 env:
   TF_CLOUD_ORGANIZATION: "DCPIM"
@@ -12,12 +13,10 @@ env:
 
 jobs:
   terraform:
-    if: ${{ github.event.issue.pull_request }} and contains(github.event.comment.body, 'terraform apply')
     name: "Terraform Apply"
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v3
