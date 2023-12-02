@@ -1,8 +1,8 @@
 name: "Terraform Apply"
 
 on:
-  issue_comment:                                     
-    types: [created]
+  issue_comment:
+    types: [created, edited, deleted]
 
 env:
   TF_CLOUD_ORGANIZATION: "DCPIM"
