@@ -12,6 +12,7 @@ data "aws_secretsmanager_secret_version" "dcpim_secret" {
 resource "aws_vpc" "dcpim_vpc" {
   cidr_block = "${var.cidr}"
   instance_tenancy = "default"
+  enable_dns_hostnames = true
   tags = {
     Name = "dcpim-vpc-${var.env}"
   }
