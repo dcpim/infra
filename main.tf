@@ -49,6 +49,28 @@ resource "aws_db_subnet_group" "dcpim_docdb_sg" {
   subnet_ids = [aws_subnet.dcpim_subnet_priv1.id, aws_subnet.dcpim_subnet_priv2.id]
 }
 
+resource "aws_security_group" "dcpim_docdb_sec" {
+  name = "dcpim-docdb-${var.env}-sec"
+  description = "Allow local DocumentDB traffic"
+  vpc_id = aws_vpc.dcpim_vpc.id
+
+  ingress {
+    description      = "All traffic from VPC"
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = [aws_vpc.dcpim_vpc.cidr_block]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+}
+
 resource "aws_docdb_cluster" "dcpim_docdb" {
   cluster_identifier      = "dcpim-docdb-${var.env}"
   engine                  = "docdb"
@@ -58,6 +80,7 @@ resource "aws_docdb_cluster" "dcpim_docdb" {
   preferred_backup_window = "07:00-09:00"
   skip_final_snapshot     = true
   db_subnet_group_name    = aws_db_subnet_group.dcpim_docdb_sg.id
+  vpc_security_group_ids  = [aws_security_group.dcpim_docdb_sec.id]
 }
 
 resource "aws_docdb_cluster_instance" "dcpim_docdb_instance" {
