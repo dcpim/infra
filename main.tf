@@ -63,6 +63,14 @@ resource "aws_security_group" "dcpim_docdb_sec" {
     cidr_blocks      = [aws_vpc.dcpim_vpc.cidr_block]
   }
 
+  ingress {
+    description      = "All traffic from management plane"
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = [aws_vpc.dcpim_vpc.ext_cidr_block]
+  }
+
   egress {
     from_port        = 0
     to_port          = 0
