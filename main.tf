@@ -66,3 +66,4 @@ resource "aws_docdb_cluster_instance" "dcpim_docdb_instance" {
   cluster_identifier = aws_docdb_cluster.dcpim_docdb.id
   instance_class     = "${var.db_instance_type}"
 }
+
