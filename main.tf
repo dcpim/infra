@@ -4,7 +4,7 @@ data "aws_secretsmanager_secret" "dcpim_secretsmanager" {
 }
 
 data "aws_secretsmanager_secret_version" "dcpim_secret" {
-  secret_id = data.aws_secretsmanager_secret.dcpim_secretsmanager.id
+  secret_id = aws_secretsmanager_secret.dcpim_secretsmanager.id
   version_stage = "AWSCURRENT"
 }
 
@@ -46,14 +46,14 @@ resource "aws_subnet" "dcpim_subnet_pub" {
 # DocumentDB database
 resource "aws_db_subnet_group" "dcpim_docdb_sg" {
   name = "dcpim-${var.env}-sg"
-  subnet_ids = [data.aws_subnet.dcpim_subnet_priv1.id, data.aws_subnet.dcpim_subnet_priv2.id]
+  subnet_ids = [aws_subnet.dcpim_subnet_priv1.id, aws_subnet.dcpim_subnet_priv2.id]
 }
 
 resource "aws_docdb_cluster" "dcpim_docdb" {
   cluster_identifier      = "dcpim-docdb-${var.env}"
   engine                  = "docdb"
   master_username         = "dcpim"
-  master_password         = data.aws_secretsmanager_secret_version.dcpim_secret.secret_string
+  master_password         = aws_secretsmanager_secret_version.dcpim_secret.secret_string
   backup_retention_period = 1
   preferred_backup_window = "07:00-09:00"
   skip_final_snapshot     = true
