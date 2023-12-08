@@ -12,8 +12,16 @@ data "aws_secretsmanager_secret_version" "dcpim_secret" {
 resource "aws_vpc" "dcpim_vpc" {
   cidr_block = "${var.cidr}"
   instance_tenancy = "default"
+  enable_dns_hostnames = true
   tags = {
     Name = "dcpim-vpc-${var.env}"
+  }
+}
+
+resource "aws_internet_gateway" "dcpim_gw" {
+  vpc_id = aws_vpc.dcpim_vpc.id
+  tags = {
+    Name = "dcpim-igw-${var.env}"
   }
 }
 
@@ -60,6 +68,14 @@ resource "aws_security_group" "dcpim_docdb_sec" {
     to_port          = 0
     protocol         = "-1"
     cidr_blocks      = [aws_vpc.dcpim_vpc.cidr_block]
+  }
+
+  ingress {
+    description      = "All traffic from management plane"
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["${var.ext_cidr}"]
   }
 
   egress {

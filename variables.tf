@@ -10,6 +10,10 @@ variable "cidr" {
   default = "10.5.0.0/16"
 }
 
+variable "ext_cidr" {
+  default = "172.30.0.0/16"
+}
+
 variable "cidr_priv1" {
   default = "10.5.1.0/24"
 }
