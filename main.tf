@@ -18,6 +18,10 @@ resource "aws_vpc" "dcpim_vpc" {
   }
 }
 
+resource "aws_internet_gateway" "dcpim_gw" {
+  vpc_id = aws_vpc.dcpim_vpc.id
+}
+
 # Subnets
 resource "aws_subnet" "dcpim_subnet_priv1" {
   vpc_id     = aws_vpc.dcpim_vpc.id
