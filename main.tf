@@ -20,6 +20,9 @@ resource "aws_vpc" "dcpim_vpc" {
 
 resource "aws_internet_gateway" "dcpim_gw" {
   vpc_id = aws_vpc.dcpim_vpc.id
+  tags = {
+    Name = "dcpim-igw-${var.env}"
+  }
 }
 
 # Subnets
@@ -72,7 +75,7 @@ resource "aws_security_group" "dcpim_docdb_sec" {
     from_port        = 0
     to_port          = 0
     protocol         = "-1"
-    cidr_blocks      = "${var.ext_cidr}"
+    cidr_blocks      = ["${var.ext_cidr}"]
   }
 
   egress {
