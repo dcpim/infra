@@ -1,13 +1,3 @@
-# Fetch master password from Secrets Manager
-data "aws_secretsmanager_secret" "dcpim_secretsmanager" {
-  arn = "${var.secret_arn}"
-}
-
-data "aws_secretsmanager_secret_version" "dcpim_secret" {
-  secret_id = data.aws_secretsmanager_secret.dcpim_secretsmanager.id
-  version_stage = "AWSCURRENT"
-}
-
 # VPC for EKS cluster
 resource "aws_vpc" "dcpim_vpc" {
   cidr_block = "${var.cidr}"
@@ -51,58 +41,35 @@ resource "aws_subnet" "dcpim_subnet_pub" {
   }
 }
 
-# DocumentDB database
-resource "aws_db_subnet_group" "dcpim_docdb_sg" {
-  name = "dcpim-${var.env}-sg"
-  subnet_ids = [aws_subnet.dcpim_subnet_priv1.id, aws_subnet.dcpim_subnet_priv2.id]
+# S3 buckets
+resource "aws_s3_bucket" "dcpim_s3_media" {
+  bucket = "dcpim-media-${var.env}"
 }
 
-resource "aws_security_group" "dcpim_docdb_sec" {
-  name = "dcpim-docdb-${var.env}-sec"
-  description = "Allow local DocumentDB traffic"
-  vpc_id = aws_vpc.dcpim_vpc.id
-
-  ingress {
-    description      = "All traffic from VPC"
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = [aws_vpc.dcpim_vpc.cidr_block]
-  }
-
-  ingress {
-    description      = "All traffic from management plane"
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["${var.ext_cidr}"]
-  }
-
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
+resource "aws_s3_bucket_versioning" "dcpim_s3_media_version" {
+  bucket = aws_s3_bucket.dcpim_s3_media.id
+  versioning_configuration {
+    status = "Enabled"
   }
 }
 
-resource "aws_docdb_cluster" "dcpim_docdb" {
-  cluster_identifier      = "dcpim-docdb-${var.env}"
-  engine                  = "docdb"
-  master_username         = "dcpim"
-  master_password         = data.aws_secretsmanager_secret_version.dcpim_secret.secret_string
-  backup_retention_period = 1
-  preferred_backup_window = "07:00-09:00"
-  skip_final_snapshot     = true
-  db_subnet_group_name    = aws_db_subnet_group.dcpim_docdb_sg.id
-  vpc_security_group_ids  = [aws_security_group.dcpim_docdb_sec.id]
+resource "aws_s3_bucket_server_side_encryption_configuration" "dcpim_s3_media_sse" {
+  bucket = aws_s3_bucket.dcpim_s3_media.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
 }
 
-resource "aws_docdb_cluster_instance" "dcpim_docdb_instance" {
-  count              = 1
-  identifier         = "dcpim-docdb-${var.env}-${count.index}"
-  cluster_identifier = aws_docdb_cluster.dcpim_docdb.id
-  instance_class     = "${var.db_instance_type}"
+resource "aws_s3_bucket_lifecycle_configuration" "dcpim_s3_media_lifecycle" {
+  bucket = aws_s3_bucket.dcpim_s3_media.id
+  rule {
+    id = "delete-expire-after-30-days"
+    status = "Enabled"
+    noncurrent_version_expiration {
+        newer_noncurrent_versions = 1
+        noncurrent_days = 30
+    }
+  }
 }
-
