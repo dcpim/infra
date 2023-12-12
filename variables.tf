@@ -21,3 +21,4 @@ variable "cidr_priv2" {
 variable "cidr_pub" {
   default = "10.5.3.0/24"
 }
+
