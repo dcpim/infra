@@ -1,13 +1,3 @@
-# Fetch master password from Secrets Manager
-data "aws_secretsmanager_secret" "dcpim_secretsmanager" {
-  arn = "${var.secret_arn}"
-}
-
-data "aws_secretsmanager_secret_version" "dcpim_secret" {
-  secret_id = data.aws_secretsmanager_secret.dcpim_secretsmanager.id
-  version_stage = "AWSCURRENT"
-}
-
 # VPC for EKS cluster
 resource "aws_vpc" "dcpim_vpc" {
   cidr_block = "${var.cidr}"
@@ -78,7 +68,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "dcpim_s3_media_lifecycle" {
     id = "delete-expire-after-30-days"
     status = "Enabled"
     noncurrent_version_expiration {
-        newer_noncurrent_versions = 0
+        newer_noncurrent_versions = 1
         noncurrent_days = 30
     }
   }
