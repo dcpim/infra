@@ -80,7 +80,6 @@ resource "aws_s3_bucket_lifecycle_configuration" "dcpim_s3_media_lifecycle" {
     noncurrent_version_expiration {
         newer_noncurrent_versions = 0
         noncurrent_days = 30
-      }
     }
   }
 }
